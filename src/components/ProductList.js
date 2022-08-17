@@ -4,7 +4,7 @@ import ItemProduct from "./ItemProductMarket";
 const ProductList = ({addToCart, db }) => {
 
     return(
-    <div className="container-products">
+    <div className="container-products" id="product-list">
     {db.map((product) => (
       <ItemProduct
         key={product.id}

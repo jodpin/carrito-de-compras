@@ -1,14 +1,28 @@
 import React from "react";
 import ItemProductCart from "./ItemProductCart";
 
-const Cart = ({ cartProducts, isVisible, addOneProduct, deleteProduct, total }) => {
+const Cart = ({
+  cartProducts,
+  isVisible,
+  addOneProduct,
+  deleteProduct,
+  total,
+  isAuth,
+  sendOrder,
+}) => {
+
   return (
-    <div className={`cart ${!isVisible && "no-visible"}`}>
+   <div className={`cart-container ${!isVisible && "no-visible"}`}>
+    <div className="cart">
       <table>
         <thead>
           <tr>
-            <th colSpan="3"> Tus compras </th>
             <th colSpan="2"> {`Total: ${total}`} </th>
+            {isAuth && cartProducts.length > 0 && (
+              <th className="cart-send-btn" onClick={sendOrder} colSpan="2">
+                {cartProducts.length > 0 ? "Enviar pedido✅" : ""}
+              </th>
+            )}
           </tr>
           <tr>
             <th>imagen</th>
@@ -38,7 +52,8 @@ const Cart = ({ cartProducts, isVisible, addOneProduct, deleteProduct, total }) 
           )}
         </tbody>
       </table>
-    </div>
+      </div>
+      </div>
   );
 };
 

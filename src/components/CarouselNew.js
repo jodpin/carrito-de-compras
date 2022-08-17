@@ -1,54 +1,65 @@
-import React from "react";
-import Carousel from "react-bootstrap/Carousel";
-import abarrotes from "../imagenes/abarrotes.jpg";
-import carnes from "../imagenes/carnes.jpg";
-import verduras from "../imagenes/verduras.jpg";
+import React, { useEffect, useState } from "react";
 
-const CarouselNew = () => {
+function CarouselNew(props) {
+  const images = ["abarrotes.jpg", "carnes.jpg", "verduras.jpg"];
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedImage, setSelectedImage] = useState(images[0]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (props.autoPlay) {
+      const interval = setInterval(() => {
+        selectIndex();
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  });
+
+  const selectIndex = (next = true) => {
+    setLoaded(false);
+    setTimeout(() => {
+      let nextIndex = null;
+      next
+        ? (nextIndex =
+            selectedIndex < images.length - 1 ? selectedIndex + 1 : 0)
+        : (nextIndex =
+            selectedIndex > 0 ? selectedIndex - 1 : images.length - 1);
+
+      setSelectedIndex(nextIndex);
+      setSelectedImage(images[nextIndex]);
+    }, 500);
+  };
+
+  const previous = () => {
+    selectIndex(false);
+  };
+
+  const next = () => {
+    selectIndex();
+  };
   return (
-    <div>
-      <h2 className="text-center pt-5">Disfruta de nuestra gran variedad</h2>
-      <Carousel className="p-2 d-flex justify-content-center align-items-center">
-        <Carousel.Item className="">
-          <img
-            className="d-block my-2 mx-auto"
-            src={verduras}
-            alt="First slide"
-          />
-          <Carousel.Caption>
-            <h3>First slide label</h3>
-            <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
-          </Carousel.Caption>
-        </Carousel.Item>
-        <Carousel.Item>
-          <img
-            className="d-block my-2 mx-auto"
-            src={carnes}
-            alt="Second slide"
-          />
-
-          <Carousel.Caption>
-            <h3>Second slide label</h3>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-          </Carousel.Caption>
-        </Carousel.Item>
-        <Carousel.Item>
-          <img
-            className="d-block my-2 mx-auto"
-            src={abarrotes}
-            alt="Third slide"
-          />
-
-          <Carousel.Caption>
-            <h3>Third slide label</h3>
-            <p>
-              Praesent commodo cursus magna, vel scelerisque nisl consectetur.
-            </p>
-          </Carousel.Caption>
-        </Carousel.Item>
-      </Carousel>
-    </div>
+    <div className="carousel-container">
+     
+        <h2>Disfruta de nuestra gran variedad</h2>
+        <img
+          className={`carousel-img && ${loaded && "loaded"}`}
+          src={require(`../imagenes/${selectedImage}`)}
+          alt="imagen"
+          onLoad={() => setLoaded(true)}
+        />
+        {props.showButtons && (
+          <div className="carousel-btn-container">
+            <button className="carousel-btn" onClick={previous}>
+              {"<"}
+            </button>
+            <button className="carousel-btn" onClick={next}>
+              {">"}
+            </button>
+          </div>
+        )}
+      </div>
+   
   );
-};
+}
 
 export default CarouselNew;

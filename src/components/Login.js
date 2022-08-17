@@ -1,11 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import axios from "axios";
-import md5 from "md5";
-import Cookies from "universal-cookie";
-
-const url = "http://localhost:5000/users";
-const cookies = new Cookies();
+import supabase from "../supabase/supabase";
 
 const initialForm = {
   user: "",
@@ -17,9 +12,10 @@ const ModalSign = ({
   setIsVisibleLogin,
   showLogin,
   setIsAuth,
+  setIsVisibleMenu
 }) => {
-
   const [form, setForm] = useState(initialForm);
+  const [error, setError] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -27,33 +23,22 @@ const ModalSign = ({
 
   const signIn = async (e) => {
     e.preventDefault();
-    setIsVisibleLogin(false);
-    let res;
-    await axios
-      .get(url, {
-        params: { user: form.user, password: md5(form.password) },
-      })
-      .then((response) => {
-        return response.data;
-      })
-      .then((response) => {
-        if (response.length > 0) {
-          console.log("se ha iniciado sesion");
-          setIsAuth(true);
-          res = response[0];
-          cookies.set("id", res.id);
-          cookies.set("nombre", res.nombre);
-          alert("bienvenido");
-        } else {
-          alert("el usuario o la contraseña no son correctas");
-          console.log("NOOOOO  se ha iniciado sesion");
-          setIsAuth(false);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
+    setIsVisibleMenu(false);
+    try {
+      let { user, error } = await supabase.auth.signIn({
+        email: form.user,
+        password: form.password,
       });
-      e.target.reset();
+      if (error) throw error;
+      console.log(user);
+      setIsAuth(true);
+      setIsVisibleLogin(false);
+    } catch (error) {
+      console.log(error);
+      setError(true);
+    }
+
+    e.target.reset();
   };
 
   return (
@@ -73,16 +58,30 @@ const ModalSign = ({
           <h2 className="title">
             <b>CompraYa</b>
           </h2>
-          <label htmlFor="Email">Usuario</label>
-          <input type="text" size="40" name="user" onChange={handleChange} />
-          <label htmlFor="Contraseña">Contraseña</label>
+          <label className="login-label" htmlFor="Email">
+            Usuario
+          </label>
           <input
             type="text"
             size="40"
+            name="user"
+            onChange={handleChange}
+            value={form.user}
+            className="login-input"
+          />
+          <label className="login-label" htmlFor="Contraseña">
+            Contraseña
+          </label>
+          <input
+            className="login-input"
+            type="password"
+            size="40"
             name="password"
             onChange={handleChange}
+            value={form.password}
           />
-          <input type="submit" value="Enviar" />
+          <input className="login-submit-btn" type="submit" value="Enviar" />
+          {error && <p className="error">datos incorrectos</p>}
         </form>
       </div>
     </article>

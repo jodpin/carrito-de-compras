@@ -5,88 +5,141 @@ import { useEffect } from "react";
 import logo from "../imagenes/logo.jpg";
 import "typeface-quicksand";
 import Footer from "./Footer";
-import ModalSign from "./ModalSign";
+import Login from "./Login";
 import CarouselNew from "./CarouselNew";
-import { Routes, Route, Navigate, Link } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import ProductList from "./ProductList";
-import Cookies from "universal-cookie";
-import SignInForm from "./SignInForm";
+import SignInForm from "./Register";
+import supabase, { takeInfoToSendOrder } from "../supabase/supabase";
+import jabondetergente from "../imagenes/jabondetergente.jpg";
+import pechu from "../imagenes/pechu.jpg";
+import carne from "../imagenes/carne.jpg";
+import cebolla from "../imagenes/cebolla.jpg";
+import habichuela from "../imagenes/habichuela.jpg";
+import huevos from "../imagenes/huevos.jpg";
+import naranjas from "../imagenes/naranjas.jpeg";
+import papa from "../imagenes/papa.jpg";
+import tomate from "../imagenes/tomate.jpg";
+import clorox from "../imagenes/clorox.jpg";
+import atun from "../imagenes/atun.jpg";
+import Salchicha from "../imagenes/Salchicha.png";
 
 const initialProducts = [
   {
     id: 1,
-    name: "producto 1",
-    price: 150,
-    img: "https://placeimg.com/150/200/animals",
+    name: "huevo - un.",
+    price: 600,
+    img: huevos,
   },
   {
-    name: "producto 2",
+    name: "tomate - kilo",
     id: 2,
     price: 200,
-    img: "https://placeimg.com/150/200/arch",
+    img: tomate,
   },
   {
-    name: "producto 3",
+    name: "cebolla - kilo",
     id: 3,
     price: 300,
-    img: "https://placeimg.com/150/200/nature",
+    img: cebolla,
   },
   {
-    name: "producto 4",
+    name: "papa - kilo",
     id: 4,
     price: 400,
-    img: "https://placeimg.com/150/200/people",
+    img: papa,
   },
   {
-    name: "producto 5",
+    name: "naranjas - kilo",
     id: 5,
-    price: 500,
-    img: "https://placeimg.com/150/200/tech",
+    price: 3500,
+    img: naranjas,
   },
   {
-    name: "producto 6",
+    name: "carne - libra",
     id: 6,
-    price: 600,
-    img: "https://placeimg.com/150/200/tech/grayscale",
+    price: 17000,
+    img: carne,
   },
   {
-    name: "producto 7",
+    name: "pechuga - libra",
     id: 7,
-    price: 700,
-    img: "https://placeimg.com/150/200/tech/sepia",
+    price: 5900,
+    img: pechu,
   },
   {
-    name: "producto 8",
+    name: "habichuela - libra",
     id: 8,
-    price: 800,
-    img: "https://placeimg.com/150/200/animals",
+    price: 700,
+    img: habichuela,
   },
   {
-    name: "producto 9",
+    name: "lata de atun",
     id: 9,
-    price: 900,
-    img: "https://placeimg.com/150/200/arch",
+    price: 4700,
+    img: atun,
+  },
+  {
+    name: "paquete de salchichas",
+    id: 10,
+    price: 6100,
+    img: Salchicha,
+  },
+  {
+    name: "jabon en polvo 500gr",
+    id: 11,
+    price: 4000,
+    img: jabondetergente,
+  },
+  ,
+  {
+    name: "clorox un. x 1000ml",
+    id: 12,
+    price: 4500,
+    img: clorox,
   },
 ];
 
-const cookies = new Cookies();
-
 const CompraYa = () => {
-  const [db, setDb] = useState(initialProducts);
+  const [db] = useState(initialProducts);
   const [cartProducts, setCartProducts] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
   const [isAuth, setIsAuth] = useState(false);
   const [isVisibleLogin, setIsVisibleLogin] = useState(false);
+  const [isVisibleMenu, setIsVisibleMenu] = useState(false);
   const [isVisibleSignIn, setIsVisibleSignIn] = useState(true);
   const [total, setTotal] = useState(0);
 
+  let navigate = useNavigate();
   useEffect(() => {
     calcTotal();
   }, [cartProducts]);
 
   function toggleFormSignIn() {
     setIsVisibleSignIn(!isVisibleSignIn);
+    console.log("esta bien");
+    navigate("/registro", { replace: true });
   }
+
+  const sendOrder = async () => {
+    try {
+      const user = supabase.auth.user();
+      console.log(user.email);
+
+      const { error, data } = await takeInfoToSendOrder({ email: user.email });
+      if (error) throw error;
+      console.log(data);
+      const [direcc] = data;
+      const { address } = direcc;
+
+      alert(`    su pedido esta en camino a la direccion ${address}
+      total a pagar: $${total}
+      gracias por preferirnos`);
+      setCartProducts([]);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   function showCart() {
     setIsVisible(!isVisible);
@@ -94,6 +147,10 @@ const CompraYa = () => {
 
   function showLogin() {
     setIsVisibleLogin(!isVisibleLogin);
+  }
+
+  function toggleMenu() {
+    setIsVisibleMenu(!isVisibleMenu);
   }
 
   function calcTotal() {
@@ -148,9 +205,8 @@ const CompraYa = () => {
   };
 
   const logOut = () => {
-    cookies.remove("id");
-    cookies.remove("nombre");
     setIsAuth(false);
+    setIsVisibleMenu(false);
   };
 
   const addOneProduct = (id) => {
@@ -168,37 +224,85 @@ const CompraYa = () => {
   };
 
   return (
-    <div>
+    <div className="main-container">
       <header className="header">
         <div className="container-logo">
           <img src={logo} alt="" className="logo" />
           <h1>
             <b>CompraYa</b>
           </h1>
+          {isAuth && <BsCart2 className="icon" onClick={showCart}></BsCart2>}
         </div>
 
-        <div className="container-icon-cart">
+        <svg
+          onClick={toggleMenu}
+          className="hamburguer"
+          fill="#e2682b"
+          height="48"
+          viewBox="0 0 24 24"
+          width="48"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g
+            stroke="#e2682b"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+          >
+            <path d="m5 7h14" />
+            <path d="m5 12h14" />
+            <path d="m5 17h14" />
+          </g>
+        </svg>
+
+        <div className={`container-menu ${isVisibleMenu && "visible"}`}>
           {isAuth && <button onClick={logOut}>Cerrar sesion</button>}
+          {!isAuth && <button onClick={toggleFormSignIn}>Registrarse</button>}
           {!isAuth && (
-            <span onClick={toggleFormSignIn}>
-              <Link className="link" to="/registro">
-                Registrarse
-              </Link>
-            </span>
+            <button onClick={showLogin}>
+              <svg
+                fill="#e2682b"
+                height="48"
+                viewBox="0 0 48 48"
+                width="48"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g fill={"currentColor"}>
+                  <path d="m33 17c0 4.9725-4.0275 9-9 9s-9-4.0275-9-9 4.0275-9 9-9 9 4.0275 9 9z" />
+                  <path d="m24 28c-6.0075 0-18 3.0347-18 8v6h36v-6c0-4.9653-11.9925-8-18-8z" />
+                </g>
+              </svg>
+            </button>
           )}
-          {!isAuth && <button onClick={showLogin}>Iniciar sesion</button>}
-          <BsCart2 className="icon" onClick={showCart}></BsCart2>
         </div>
       </header>
 
+      {isAuth && (
+        <Cart
+          cartProducts={cartProducts}
+          isVisible={isVisible}
+          deleteProduct={deleteProduct}
+          addOneProduct={addOneProduct}
+          total={total}
+          isAuth={isAuth}
+          sendOrder={sendOrder}
+        />
+      )}
+
       <div className="img-container">
-        <h1>Todo lo que necesitas al alcance de tu mano</h1>
+        <div className="img">
+          <h1 className="header-h1">
+            Todo lo que necesitas al alcance de tu mano
+          </h1>
+        </div>
       </div>
 
       <Routes>
         <Route
           path="/"
-          element={!isAuth ? <CarouselNew /> : <Navigate to="/hacer-pedido" />}
+          element={
+            !isAuth ? <CarouselNew autoPlay /> : <Navigate to="/hacer-pedido" />
+          }
         />
         <Route
           path="/registro"
@@ -222,20 +326,13 @@ const CompraYa = () => {
         />
       </Routes>
 
-      <Cart
-        cartProducts={cartProducts}
-        isVisible={isVisible}
-        deleteProduct={deleteProduct}
-        addOneProduct={addOneProduct}
-        total={total}
-      />
-
       <Footer />
-      <ModalSign
+      <Login
         isVisibleLogin={isVisibleLogin}
         setIsVisibleLogin={setIsVisibleLogin}
         showLogin={showLogin}
         setIsAuth={setIsAuth}
+        setIsVisibleMenu={setIsVisibleMenu}
       />
     </div>
   );

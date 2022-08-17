@@ -6,10 +6,10 @@ const ItemProduct = ({ product, addToCart }) => {
 
   return (
     <div className="item-product">
-      <h3>{name}</h3>
-      <img src={img} alt="imagen" />
-      <h4>{price}</h4>
-      <button className="add-btn btn btn-secondary" onClick={() => addToCart(id)}>
+      <h3 className="item-product-name">{name}</h3>
+      <img className="item-product-img" src={img} alt="imagen" />
+      <h4 className="item-product-price">{price}</h4>
+      <button className="item-product-btn" onClick={() => addToCart(id)}>
         Agregar al carrito
       </button>
       {/* al pasarle por parametro el id en el hijo, lo enviamos al padre donde esta definida la funcion*/}
